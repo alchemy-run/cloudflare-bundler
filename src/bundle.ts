@@ -18,7 +18,7 @@ export interface CloudflareOptions {
   /** Absolute path to the project root */
   readonly projectRoot: string;
   /** Absolute path to the output directory */
-  readonly outputDir: string;
+  readonly outdir: string;
   /** Cloudflare compatibility date */
   readonly compatibilityDate?: string;
   /** Cloudflare compatibility flags (e.g., ["nodejs_compat"]) */

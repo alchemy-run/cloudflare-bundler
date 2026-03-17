@@ -126,7 +126,7 @@ export const RspackBundleLive = Layer.effect(
         target: "webworker",
         entry,
         output: {
-          path: options.outputDir,
+          path: options.outdir,
           filename: "[name].js",
           chunkFilename: "[name]-[contenthash].js",
           clean: true,
@@ -208,9 +208,7 @@ export const RspackBundleLive = Layer.effect(
                   Object.fromEntries(
                     Object.entries(unenv.inject).map(([name, value]) => [
                       name,
-                      typeof value === "string"
-                        ? value
-                        : [String(value[0]), String(value[1])],
+                      typeof value === "string" ? value : [String(value[0]), String(value[1])],
                     ]),
                   ) as ProvidePluginOptions,
                 ),
@@ -328,7 +326,7 @@ export const RspackBundleLive = Layer.effect(
           });
         }
 
-        const main = path.resolve(options.outputDir, mainAsset.name);
+        const main = path.resolve(options.outdir, mainAsset.name);
         const outputModules = modules.map((m) => ({
           ...m,
           path: path.resolve(path.dirname(main), m.name),
@@ -337,7 +335,7 @@ export const RspackBundleLive = Layer.effect(
         const emittedModules = yield* readEmittedJavaScriptModules({
           fs,
           path,
-          outputDir: options.outputDir,
+          outputDir: options.outdir,
           main,
         }).pipe(Effect.mapError(mapBuildError));
 
@@ -345,7 +343,7 @@ export const RspackBundleLive = Layer.effect(
           main,
           modules: [...emittedModules, ...outputModules],
           type: options.format === "service-worker" ? "commonjs" : "esm",
-          outputDir: options.outputDir,
+          outputDir: options.outdir,
         } satisfies BundleResult;
       });
     }
@@ -360,7 +358,11 @@ const runCompiler = (compiler: Compiler) =>
           if (error) return reject(error);
           if (!stats)
             return reject(
-              new BuildError({ message: "Rspack compilation returned no stats.", errors: [], warnings: [] }),
+              new BuildError({
+                message: "Rspack compilation returned no stats.",
+                errors: [],
+                warnings: [],
+              }),
             );
           resolve(stats);
         });
@@ -399,7 +401,11 @@ const scanModuleAssets = Effect.fn(function* ({
                 const matched = ruleFilters.find(({ filters }) =>
                   filters.some((f) => f.test(relativePath)),
                 );
-                if (!matched || matched.rule.type === "ESModule" || matched.rule.type === "CommonJS") {
+                if (
+                  !matched ||
+                  matched.rule.type === "ESModule" ||
+                  matched.rule.type === "CommonJS"
+                ) {
                   return Effect.void;
                 }
                 return fs.readFile(filePath).pipe(
@@ -409,7 +415,12 @@ const scanModuleAssets = Effect.fn(function* ({
                     const fileName = preserveFileNames
                       ? nodePath.basename(relativePath)
                       : `${hash}-${nodePath.basename(relativePath)}`;
-                    modules.push({ name: fileName, path: filePath, content: buf, type: matched.rule.type });
+                    modules.push({
+                      name: fileName,
+                      path: filePath,
+                      content: buf,
+                      type: matched.rule.type,
+                    });
                   }),
                 );
               }),
@@ -429,7 +440,10 @@ const createModuleRules = (options: CloudflareOptions, path: Path.Path) =>
     if (rule.type === "ESModule" || rule.type === "CommonJS") return [];
     const loader =
       rule.type === "CompiledWasm"
-        ? { loader: wasmLoaderPath, options: { preserveFileNames: options.preserveFileNames ?? false } }
+        ? {
+            loader: wasmLoaderPath,
+            options: { preserveFileNames: options.preserveFileNames ?? false },
+          }
         : rule.type === "Text"
           ? { loader: textLoaderPath }
           : { loader: dataLoaderPath };
@@ -458,18 +472,23 @@ const navigatorUserAgentPlugin = (options: CloudflareOptions) => ({
   apply(compiler: Compiler) {
     if (!options.compatibilityDate || options.compatibilityDate < "2022-03-21") return;
     compiler.hooks.thisCompilation.tap("distilled-navigator-ua", (compilation: any) => {
-      compilation.hooks.processAssets.tap({ name: "distilled-navigator-ua" }, (assets: Record<string, any>) => {
-        for (const [name, source] of Object.entries(assets)) {
-          if (!/\.[cm]?js$/.test(name)) continue;
-          const code = source.source().toString();
-          if (code.includes("navigator.userAgent")) {
-            compilation.updateAsset(
-              name,
-              new sources.RawSource(code.replaceAll("navigator.userAgent", '"Cloudflare-Workers"')),
-            );
+      compilation.hooks.processAssets.tap(
+        { name: "distilled-navigator-ua" },
+        (assets: Record<string, any>) => {
+          for (const [name, source] of Object.entries(assets)) {
+            if (!/\.[cm]?js$/.test(name)) continue;
+            const code = source.source().toString();
+            if (code.includes("navigator.userAgent")) {
+              compilation.updateAsset(
+                name,
+                new sources.RawSource(
+                  code.replaceAll("navigator.userAgent", '"Cloudflare-Workers"'),
+                ),
+              );
+            }
           }
-        }
-      });
+        },
+      );
     });
   },
 });

@@ -94,7 +94,7 @@ export const EsbuildBundleLive = Layer.effect(
         entryPoints: [options.main],
         bundle: true,
         absWorkingDir: options.projectRoot,
-        outdir: options.outputDir,
+        outdir: options.outdir,
         format: deriveFormat(options.format),
         sourcemap: true,
         metafile: true,
@@ -120,7 +120,7 @@ export const EsbuildBundleLive = Layer.effect(
         }
 
         const entryPointInfo = yield* getEntryPointFromMetafile(result.metafile);
-        const resolvedEntryPoint = path.resolve(options.outputDir, entryPointInfo.relativePath);
+        const resolvedEntryPoint = path.resolve(options.outdir, entryPointInfo.relativePath);
         const modules = moduleCollector.getModules();
 
         if (modules.length > 0) {
@@ -134,7 +134,7 @@ export const EsbuildBundleLive = Layer.effect(
           main: resolvedEntryPoint,
           modules,
           type: entryPointInfo.exports.length > 0 ? "esm" : "commonjs",
-          outputDir: options.outputDir,
+          outputDir: options.outdir,
         } satisfies BundleResult;
       });
 

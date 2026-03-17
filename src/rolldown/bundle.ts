@@ -101,7 +101,7 @@ export const RolldownBundleLive = Layer.effect(
       } satisfies InputOptions;
 
       const outputOptions = {
-        dir: options.outputDir,
+        dir: options.outdir,
         format: deriveFormat(options.format),
         sourcemap: true,
         minify: options.minify ?? false,
@@ -147,18 +147,18 @@ export const RolldownBundleLive = Layer.effect(
             });
           }
 
-          const main = path.resolve(options.outputDir, entryChunk.fileName);
+          const main = path.resolve(options.outdir, entryChunk.fileName);
           const copiedModules = moduleCollector.getModules();
           yield* writeCopiedModules(copiedModules, path.dirname(main));
 
           const emittedModules: Array<Module> = output.output
             .filter(
               (item): item is OutputChunk =>
-                item.type === "chunk" && path.resolve(options.outputDir, item.fileName) !== main,
+                item.type === "chunk" && path.resolve(options.outdir, item.fileName) !== main,
             )
             .map((chunk) => ({
               name: chunk.fileName,
-              path: path.resolve(options.outputDir, chunk.fileName),
+              path: path.resolve(options.outdir, chunk.fileName),
               content: Buffer.from(chunk.code),
               type: chunk.fileName.endsWith(".cjs") ? "CommonJS" : ("ESModule" as Module.Type),
             }));
@@ -167,7 +167,7 @@ export const RolldownBundleLive = Layer.effect(
             main,
             modules: [...emittedModules, ...copiedModules],
             type: entryChunk.exports.length > 0 ? "esm" : "commonjs",
-            outputDir: options.outputDir,
+            outputDir: options.outdir,
           } satisfies BundleResult;
         } finally {
           yield* Effect.promise(() => bundle.close()).pipe(Effect.ignore);
@@ -191,14 +191,14 @@ export const RolldownBundleLive = Layer.effect(
                   const result = await Effect.runPromise(
                     Effect.gen(function* () {
                       const entryFile = `${path.basename(options.main, path.extname(options.main))}.js`;
-                      const main = path.resolve(options.outputDir, entryFile);
+                      const main = path.resolve(options.outdir, entryFile);
                       const code = yield* fs.readFileString(main);
                       const copiedModules = moduleCollector.getModules();
                       yield* writeCopiedModules(copiedModules, path.dirname(main));
                       const emittedModules = yield* readEmittedJavaScriptModules({
                         fs,
                         path,
-                        outputDir: options.outputDir,
+                        outputDir: options.outdir,
                         main,
                       });
 
@@ -206,7 +206,7 @@ export const RolldownBundleLive = Layer.effect(
                         main,
                         modules: [...emittedModules, ...copiedModules],
                         type: /\bexport[\s{]/.test(code) ? "esm" : "commonjs",
-                        outputDir: options.outputDir,
+                        outputDir: options.outdir,
                       } satisfies BundleResult;
                     }),
                   );
