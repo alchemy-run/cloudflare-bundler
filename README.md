@@ -1,11 +1,15 @@
 # `@distilled.cloud/cloudflare-bundler`
 
-Effect-native bundler for Cloudflare Workers, built on top of esbuild.
+Effect-native bundler for Cloudflare Workers with explicit backend adapters.
 
 ## Install
 
 ```bash
 bun add @distilled.cloud/cloudflare-bundler effect@beta esbuild
+# or:
+bun add @distilled.cloud/cloudflare-bundler effect@beta rolldown
+# or:
+bun add @distilled.cloud/cloudflare-bundler effect@beta @rspack/core
 ```
 
 ## Usage
@@ -15,7 +19,10 @@ import * as NodeFileSystem from "@effect/platform-node/NodeFileSystem";
 import * as NodePath from "@effect/platform-node/NodePath";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
-import { Bundle, BundleLive } from "@distilled.cloud/cloudflare-bundler";
+import { Bundle } from "@distilled.cloud/cloudflare-bundler";
+import { EsbuildBundleLive } from "@distilled.cloud/cloudflare-bundler/esbuild";
+// or: import { RolldownBundleLive } from "@distilled.cloud/cloudflare-bundler/rolldown";
+// or: import { RspackBundleLive } from "@distilled.cloud/cloudflare-bundler/rspack";
 
 const program = Effect.gen(function* () {
   const bundle = yield* Bundle;
@@ -30,7 +37,7 @@ const program = Effect.gen(function* () {
   });
 });
 
-const layer = Layer.provide(BundleLive, Layer.mergeAll(NodeFileSystem.layer, NodePath.layer));
+const layer = Layer.provide(EsbuildBundleLive, Layer.mergeAll(NodeFileSystem.layer, NodePath.layer));
 
 const result = await Effect.runPromise(Effect.provide(program, layer));
 console.log(result.main);
