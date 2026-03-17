@@ -28,7 +28,7 @@ export function bundleWithEsbuild(config: BundleConfig): Effect.Effect<BundleRes
     const options: CloudflareOptions = {
       main: config.entryPoint,
       projectRoot: config.projectRoot,
-      outputDir: outdir,
+      outdir,
       compatibilityDate: config.compatibilityDate,
       compatibilityFlags: config.compatibilityFlags,
       define: config.define,
@@ -41,6 +41,7 @@ export function bundleWithEsbuild(config: BundleConfig): Effect.Effect<BundleRes
       preserveFileNames: config.preserveFileNames,
       external: config.external ? [...config.external] : undefined,
       minify: config.minify,
+      sourcemap: config.sourcemap,
       keepNames: config.keepNames,
       tsconfig: config.tsconfig,
       format: config.format,

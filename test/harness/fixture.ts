@@ -64,6 +64,7 @@ export function loadFixture(fixtureName: string): Effect.Effect<BundleConfig> {
       external: config.external as Array<string> | undefined,
       durableObjects,
       minify: config.minify as boolean | undefined,
+      sourcemap: config.sourcemap as boolean | undefined,
       keepNames: config.keep_names as boolean | undefined,
       tsconfig: config.tsconfig as string | undefined,
     } satisfies BundleConfig;

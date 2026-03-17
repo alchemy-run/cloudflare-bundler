@@ -18,7 +18,11 @@ describe("source-maps", () => {
   let config: BundleConfig;
 
   it.beforeAll(async () => {
-    config = await Effect.runPromise(loadFixture("node-env"));
+    const baseConfig = await Effect.runPromise(loadFixture("node-env"));
+    config = {
+      ...baseConfig,
+      sourcemap: true,
+    };
   });
 
   describe.each([

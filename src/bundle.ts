@@ -35,6 +35,8 @@ export interface CloudflareOptions {
   readonly external?: ReadonlyArray<string>;
   /** Whether to minify the output */
   readonly minify?: boolean;
+  /** Whether to generate source maps */
+  readonly sourcemap?: boolean;
   /** Whether to preserve function/class names (default: true, matching wrangler) */
   readonly keepNames?: boolean;
   /** Path to tsconfig.json (absolute or relative to projectRoot) */

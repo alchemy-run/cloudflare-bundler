@@ -103,7 +103,7 @@ export const RolldownBundleLive = Layer.effect(
       const outputOptions = {
         dir: options.outdir,
         format: deriveFormat(options.format),
-        sourcemap: true,
+        sourcemap: options.sourcemap ?? false,
         minify: options.minify ?? false,
         entryFileNames: "[name].js",
         chunkFileNames: "[name]-[hash].js",

@@ -97,6 +97,9 @@ const makeWatchBundle = Effect.fn(function* (options: CloudflareOptions) {
   };
 });
 
+const settleWatcher = () =>
+  Effect.promise(() => new Promise<void>((resolve) => setTimeout(resolve, 100)));
+
 for (const backend of backends) {
   layer(backend.layer)(`watch (${backend.name})`, (it) => {
     it.effect("emits initial build result", () =>
@@ -108,7 +111,7 @@ for (const backend of backends) {
         const bundle = yield* makeWatchBundle({
           main: fixture.entryPoint,
           projectRoot: fixture.projectRoot,
-          outputDir: outdir,
+          outdir,
           compatibilityDate: "2025-07-01",
         });
 
@@ -133,12 +136,14 @@ for (const backend of backends) {
         const bundle = yield* makeWatchBundle({
           main: fixture.entryPoint,
           projectRoot: fixture.projectRoot,
-          outputDir: outdir,
+          outdir,
           compatibilityDate: "2025-07-01",
         });
 
         const first = yield* bundle.next;
         expect(Result.isSuccess(first)).toBe(true);
+
+        yield* settleWatcher();
 
         yield* fs.writeFileString(
           fixture.entryPoint,
@@ -169,12 +174,14 @@ for (const backend of backends) {
         const bundle = yield* makeWatchBundle({
           main: fixture.entryPoint,
           projectRoot: fixture.projectRoot,
-          outputDir: outdir,
+          outdir,
           compatibilityDate: "2025-07-01",
         });
 
         const first = yield* bundle.next;
         expect(Result.isSuccess(first)).toBe(true);
+
+        yield* settleWatcher();
 
         yield* fs.writeFileString(
           fixture.entryPoint,
