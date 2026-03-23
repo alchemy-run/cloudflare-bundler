@@ -1,0 +1,8 @@
+{
+  "name": "defines",
+  "main": "./src/index.ts",
+  "compatibility_date": "2024-12-30",
+  "define": {
+    "MY_CONSTANT": "\"hello from define\""
+  }
+}

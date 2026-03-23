@@ -35,5 +35,6 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 
 # Wrangler build output
 .wrangler
+.wrangler-test-out
 
 .ai-workspace

@@ -1,0 +1,5 @@
+{
+  "name": "cloudflare-externals",
+  "main": "./src/index.ts",
+  "compatibility_date": "2024-12-30"
+}
